@@ -153,6 +153,10 @@ class Options(object):
                                       " This is useful when dealing with flexible materials " +
                                       "where you know that structural collapse will result in " +
                                       "the box decreasing past 2*rcut")
+        simulation_group.add_argument("--no-replicate-molecules", action="store_true",
+                                      default=False, dest='dont_replicate_molecules',
+                                      help="Don't apply replication to molecules in the unit cell. " +
+                                      "Default is FALSE, all molecules are replicated.")
         simulation_group.add_argument("-O","--orthogonalize", action="store_true",
                                       default=False,
                                       dest="orthogonalize",

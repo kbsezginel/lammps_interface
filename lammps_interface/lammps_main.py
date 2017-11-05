@@ -711,11 +711,10 @@ class LammpsSimulation(object):
                 molcount = max([g.molecule_id for g in self.subgraphs])
 
             for mtype in list(self.molecule_types.keys()):
-                # prompt for replication of this molecule in the supercell.
+                # Molecule replication is read from options
                 rep = self.subgraphs[self.molecule_types[mtype][0]]
-                response = input("Would you like to replicate molceule %i with atoms (%s) in the supercell? [y/n]: "%
-                        (mtype, ", ".join([rep.node[j]['element'] for j in rep.nodes()])))
-                if response in ['y', 'Y', 'yes']:
+                if not self.options.dont_replicate_molecules:
+                    print('Replicating molecule %i with atoms (%s)' % (mtype, ", ".join([rep.node[j]['element'] for j in rep.nodes()])))
                     for m in self.molecule_types[mtype]:
                         self.subgraphs[m].build_supercell(supercell, self.cell, track_molecule=True, molecule_len=molcount)
             self.cell.update_supercell(supercell)
