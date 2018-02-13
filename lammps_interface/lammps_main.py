@@ -84,7 +84,7 @@ class LammpsSimulation(object):
                   "MolecularGraphs.  You should probably contact one of the developers.")
             sys.exit()
 
-        for node, data in g.nodes_iter(data=True):
+        for node, data in g.nodes_iter2(data=True):
             if self.separate_molecule_types and molecule_nodes and mainstructr:
                 molid = [j for j,mol in enumerate(molecule_nodes) if node in mol]
                 molid = molid[0]
@@ -146,7 +146,7 @@ class LammpsSimulation(object):
 
     def unique_angles(self, g):
         count = len(self.unique_angle_types)
-        for b, data in g.nodes_iter(data=True):
+        for b, data in g.nodes_iter2(data=True):
             # compute and store angle terms
             try:
                 ang_data = data['angles']
@@ -198,7 +198,7 @@ class LammpsSimulation(object):
     def unique_impropers(self, g):
         count = len(self.unique_improper_types)
 
-        for b, data in g.nodes_iter(data=True):
+        for b, data in g.nodes_iter2(data=True):
             try:
                 rem = []
                 imp_data = data['impropers']
@@ -228,7 +228,7 @@ class LammpsSimulation(object):
         pot_names = []
         nodes_list = sorted(self.unique_atom_types.keys())
         electro_neg_atoms = ["N", "O", "F"]
-        for n, data in self.graph.nodes_iter(data=True):
+        for n, data in self.graph.nodes_iter2(data=True):
             if data['h_bond_donor']:
                 pot_names.append('h_bonding')
             if data['tabulated_potential']:
@@ -1252,7 +1252,7 @@ class LammpsSimulation(object):
         # a separate command and not combined with the 'molecule' command
         if self.options.insert_molecule:
             moltypes = []
-            for mnode, mdata in self.template_molecule.nodes_iter(data=True):
+            for mnode, mdata in self.template_molecule.nodes_iter2(data=True):
                 moltypes.append(mdata['ff_type_index'])
 
             inp_str += "%-15s %s type   "%("group", self.options.insert_molecule)
@@ -1265,7 +1265,7 @@ class LammpsSimulation(object):
             inp_str += "\n"
 
 
-        framework_atoms = self.graph.nodes()
+        framework_atoms = list(self.graph.nodes())
         if(self.molecules)and(len(self.molecule_types.keys()) < 32):
             # lammps cannot handle more than 32 groups including 'all'
             total_count = 0
@@ -1801,15 +1801,16 @@ class LammpsSimulation(object):
                 self.molecules.append(j)
 
     def cut_molecule(self, nodes):
-        mgraph = self.graph.subgraph(nodes).copy()
+        mgraph = self.graph.subgraph(nodes)
         self.graph.remove_nodes_from(nodes)
         indices = np.array(list(nodes))
         indices -= 1
         mgraph.coordinates = self.graph.coordinates[indices,:].copy()
-        mgraph.sorted_edge_dict = self.graph.sorted_edge_dict.copy()
+        #mgraph.sorted_edge_dict = self.graph.sorted_edge_dict.copy()
+        mgraph.sorted_edge_dict = {}
         mgraph.distance_matrix = self.graph.distance_matrix.copy()
         mgraph.original_size = self.graph.original_size
-        for n1, n2 in mgraph.edges_iter():
+        for n1, n2 in mgraph.edges():
             try:
                 val = self.graph.sorted_edge_dict.pop((n1, n2))
                 mgraph.sorted_edge_dict.update({(n1, n2):val})

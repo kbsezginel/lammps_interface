@@ -8,8 +8,12 @@ from scipy.spatial import distance
 
 def add_distance_matrix(graph):
     carts = []
-    for j, data in sorted(graph.nodes_iter(data=True)):
-        carts.append(data['cartesian_coordinates'])
+    if(float('.'.join(nx.__version__.split('.')[:2])) >= 2.0):
+        for j, data in sorted(list(graph.nodes(data=True))):
+            carts.append(data['cartesian_coordinates'])
+    else:
+        for j, data in sorted(graph.nodes_iter(data=True)):
+            carts.append(data['cartesian_coordinates'])
     carts = np.array(carts)
     graph.distance_matrix = distance.cdist(carts, carts)
 
