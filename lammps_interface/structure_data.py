@@ -325,6 +325,12 @@ class MolecularGraph(nx.Graph):
             # fix for water particle recognition.
             if(set(["O", "H"]) <= elements):
                 tempsf = 0.8
+            # fix for M-NDISA MOFs 
+            if(set(["O", "C"]) <= elements):
+                tempsf = 0.8
+            if (set("O") < elements) and (elements & metals):
+                tempsf = 0.82
+                                                            
             # very specific fix for Michelle's amine appended MOF
             if(set(["N","H"]) <= elements):
                 tempsf = 0.67
@@ -552,7 +558,11 @@ class MolecularGraph(nx.Graph):
                 self.remove_edge(node, n)
                 cycle = []
                 try:
-                    cycle = list(nx.all_shortest_paths(self, node, n))
+                    # cycle = list(nx.all_shortest_paths(self, node, n))
+                    cycle = list(nx.all_simple_paths(self, source=node, target=n, cutoff=10))
+                    if not cycle==[]: # storing all path that have the length of the shortest path of the graph
+                        cycle_shortest_path = min(map(len, cycle))
+                        cycle = [cyc for cyc in cycle if len(cyc) == cycle_shortest_path]
                 except nx.exception.NetworkXNoPath:
                     pass
                 self.add_edge(node, n, **edge)
